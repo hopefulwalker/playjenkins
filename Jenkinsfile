@@ -1,46 +1,39 @@
 pipeline {
-
-  environment {
-    registry = "192.168.28.230:30400/walker/myweb"
-    dockerImage = ""
-  }
-
   agent any
-
   stages {
-
     stage('Checkout Source') {
       steps {
         git 'https://github.com/hopefulwalker/playjenkins.git'
       }
     }
-
     stage('Build image') {
-      steps{
+      steps {
         script {
           dockerImage = docker.build registry + ":$BUILD_NUMBER"
         }
+
       }
     }
-
     stage('Push Image') {
-      steps{
+      steps {
         script {
           docker.withRegistry( "" ) {
             dockerImage.push()
           }
         }
+
       }
     }
-
     stage('Deploy App') {
       steps {
         script {
           kubernetesDeploy(configs: "myweb.yaml", kubeconfigId: "mykubeconfig")
         }
+
       }
     }
-
   }
-
+  environment {
+    registry = '192.168.28.230:30400/walker/myweb'
+  }
 }
